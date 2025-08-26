@@ -129,7 +129,9 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
         int total;
         List<Problem.ProblemItem> items ;
         //无tag标签筛选,直接分页后补充标签信息
-        tags.removeIf(StrUtil::isBlank);
+        if(tags!=null){ //前端可能不传tags
+            tags.removeIf(StrUtil::isBlank);
+        }
         if(CollectionUtil.isEmpty(tags)){
             //查询所有Problem（分页后）
             IPage<Problem> problems = this.page(pageInfo);
