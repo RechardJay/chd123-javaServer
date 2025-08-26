@@ -100,7 +100,7 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
         List<String> outputs = problem.getOutputs();
         List<ProblemCase> caseList = new ArrayList<>();
         for(int i = 0; i < 3; i++) {
-            if(i == inputs.size()) break;
+            if(i == inputs.size()||i==outputs.size()) break;
             ProblemCase pCase = ProblemCase.builder()
                     .sId(id)
                     .sCode(sCode)
