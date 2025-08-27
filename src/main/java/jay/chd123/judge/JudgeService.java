@@ -43,7 +43,11 @@ public class JudgeService {
 
             // 3. 执行所有测试用例
             List<ProblemCase> caseList = new ArrayList<>();
-            caseList.add(new ProblemCase());
+            //测试
+            caseList.add(ProblemCase.builder()
+                    .input("2 3")
+                    .output("5")
+                    .build());
             for (ProblemCase testCase : caseList) {
                 JudgeResult.CaseResult caseResult = executeTestCase(testCase);
                 caseResults.add(caseResult);
@@ -83,14 +87,16 @@ public class JudgeService {
      * 编译代码
      */
     private CompileResult compileCode() throws Exception {
-        String command = String.format(
-                "docker exec %s g++ -o /tmp/solution /tmp/solution.cpp 2>&1",
-                CONTAINER_NAME
-        );
+        String[] cmd = {
+                "docker", "exec", CONTAINER_NAME,
+                "bash", "-c", "g++ -o /tmp/solution /tmp/solution.cpp"
+        };
 
-        Process process = Runtime.getRuntime().exec(command);
+        ProcessBuilder pb = new ProcessBuilder(cmd);
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
         String output = readProcessOutput(process);
-        int exitCode = process.waitFor();
+        int exitCode = process.waitFor();   // 现在就会是 0
 
         CompileResult result = new CompileResult();
         result.setSuccess(exitCode == 0);
@@ -155,12 +161,14 @@ public class JudgeService {
      * 在容器内创建代码文件
      */
     private void createCodeInContainer(String code) throws Exception {
-        String escapedCode = code.replace("'", "'\\''")
-                .replace("\"", "\\\"")
-                .replace("$", "\\$");
+        // 或者使用printf（更简洁）
+        String escapedCode = code
+                .replace("\\", "\\\\")   // 先转义反斜杠
+                .replace("\n", "\\n")
+                .replace("'", "'\\''");  // 再转义单引号
 
         String command = String.format(
-                "docker exec %s bash -c \"echo '%s' > /tmp/solution.cpp\"",
+                "docker exec %s bash -c \"printf '%s' > /tmp/solution.cpp\"",
                 CONTAINER_NAME, escapedCode
         );
 
