@@ -1,5 +1,6 @@
 package jay.chd123.judge;
 
+import jay.chd123.global.entity.Result;
 import jay.chd123.judge.entity.JudgeRequest;
 import jay.chd123.judge.entity.JudgeResult;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,9 +15,8 @@ public class Controller {
         this.judgeService = judgeService;
     }
     @PostMapping("/judge")
-    public JudgeResult judge(@RequestBody JudgeRequest judge) {
-        System.out.println(judge);
-        judgeService.notify();
-        return null;
+    public Result<JudgeResult> judge(@RequestBody JudgeRequest request) {
+        JudgeResult judgeResult = judgeService.judgeCode(request);
+        return Result.success(judgeResult);
     }
 }
