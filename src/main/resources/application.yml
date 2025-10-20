@@ -17,3 +17,7 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: ASSIGN_ID
+
+jwt:
+  secret: chd123-secret-dev  # 密钥
+  expireSeconds: 259200 # 过期时间（三天）

@@ -11,7 +11,7 @@ public class Result<T> implements Serializable {
 
     private Integer code; //编码：0成功，其它数字为失败
 
-    private String msg; //错误信息
+    private String msg; //提示信息
 
     private T data; //数据
 
