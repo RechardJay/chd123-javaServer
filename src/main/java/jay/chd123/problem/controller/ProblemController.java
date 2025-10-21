@@ -12,6 +12,7 @@ import jay.chd123.problem.entity.reqParam.ReqProblemList;
 import jay.chd123.problem.service.ProblemService;
 import jay.chd123.problem.service.servieImpl.CaseServiceImpl;
 import jay.chd123.problem.service.servieImpl.TagServiceImpl;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -32,8 +33,12 @@ public class ProblemController {
     }
 
     @GetMapping()
-    public Result<String> getProblems(){
-        return Result.success("测试接口联通");
+    public Result<String> getProblems(@Param("problemId") String problemId){
+        Problem problem = problemService.getOne(new QueryWrapper<Problem>().eq("id", problemId));
+        if(problem == null){
+            return Result.error("题目不存在");
+        }
+        return Result.success(problem.getDescription());
     }
 
     @PostMapping("/list")
