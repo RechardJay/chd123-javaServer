@@ -23,12 +23,12 @@ public class UserController {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
     }
-    @PostMapping("/singup")
+    @PostMapping("/signup")
     public Result<UserVO> singUp(@RequestBody UserSignUpDTO userDto){
         String email = userDto.getEmail();
         long exist = userService.count(new QueryWrapper<User>().eq("email", email));
         if(exist > 0){
-            return Result.error("邮箱已经存在");
+            return Result.error("邮箱已经注册");
         }
         //
         User user = new User();
@@ -72,6 +72,7 @@ public class UserController {
 
                 Result<UserVO> success = Result.success(resultVO);
                 success.setMsg("登录成功");
+                return success;
             }
             return Result.error("账号或者密码错误");
         }
