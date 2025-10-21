@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/src/main/java/jay/chd123/problem/mapper/TagMapper.java" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/java/jay/chd123/problem/mapper/ProblemTagMapper.java" dialect="GenericSQL" />
   </component>
 </project>

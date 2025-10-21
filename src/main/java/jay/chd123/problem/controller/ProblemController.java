@@ -11,7 +11,7 @@ import jay.chd123.problem.entity.db.ProblemTag;
 import jay.chd123.problem.entity.reqParam.ReqProblemList;
 import jay.chd123.problem.service.ProblemService;
 import jay.chd123.problem.service.servieImpl.CaseServiceImpl;
-import jay.chd123.problem.service.servieImpl.TagServiceImpl;
+import jay.chd123.problem.service.servieImpl.ProblemTagServiceImpl;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,9 +24,9 @@ import java.util.Map;
 public class ProblemController {
     private final ProblemService problemService;
     private final CaseServiceImpl caseService;
-    private final TagServiceImpl tagService;
+    private final ProblemTagServiceImpl tagService;
 
-    public ProblemController(ProblemService problemService, CaseServiceImpl caseService, TagServiceImpl tagService) {
+    public ProblemController(ProblemService problemService, CaseServiceImpl caseService, ProblemTagServiceImpl tagService) {
         this.problemService = problemService;
         this.caseService = caseService;
         this.tagService = tagService;

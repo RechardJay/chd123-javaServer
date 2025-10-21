@@ -15,7 +15,7 @@ import jay.chd123.problem.entity.db.ProblemTag;
 import jay.chd123.problem.mapper.ProblemMapper;
 import jay.chd123.problem.service.CaseService;
 import jay.chd123.problem.service.ProblemService;
-import jay.chd123.problem.service.TagService;
+import jay.chd123.problem.service.ProblemTagService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,11 +25,11 @@ import java.util.stream.Collectors;
 @Service
 public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> implements ProblemService {
     final CaseService caseService;
-    final TagService tagService;
+    final ProblemTagService problemTagService;
 
-    public ProblemServiceImpl(CaseService caseService, TagService tagService) {
+    public ProblemServiceImpl(CaseService caseService, ProblemTagService problemTagService) {
         this.caseService = caseService;
-        this.tagService = tagService;
+        this.problemTagService = problemTagService;
     }
     @Override
     @Transactional
@@ -46,7 +46,7 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
         int id = problem.getId();
         QueryWrapper<ProblemTag> tagDelete = new QueryWrapper<>();
         tagDelete.eq("sId", id);
-        tagService.remove(tagDelete);
+        problemTagService.remove(tagDelete);
         QueryWrapper<ProblemCase> caseDelete = new QueryWrapper<>();
         caseDelete.eq("sId", id);
         caseDelete.eq("type", ProblemCase.TYPE.EXAMPLE.name());
@@ -87,7 +87,7 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
         //查询标签信息
         QueryWrapper<ProblemTag> tagQueryWrapper = new QueryWrapper<>();
         tagQueryWrapper.eq("sId",id);
-        List<ProblemTag> tags = tagService.list(tagQueryWrapper);
+        List<ProblemTag> tags = problemTagService.list(tagQueryWrapper);
         List<String> tagList = new ArrayList<>();
         tags.forEach(i-> tagList.add(i.getTagName()));
         info.setTags(tagList);
@@ -120,7 +120,7 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
                 tagList.add(tag);
             }
         }
-        tagService.saveBatch(tagList);
+        problemTagService.saveBatch(tagList);
         caseService.saveBatch(caseList);
     }
     @Override
@@ -145,7 +145,7 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
                     .collect(Collectors.toList());
             QueryWrapper<ProblemTag> tagQueryWrapper = new QueryWrapper<>();
             tagQueryWrapper.eq("sId",sIdList);
-            List<ProblemTag> tagList = tagService.list(tagQueryWrapper);
+            List<ProblemTag> tagList = problemTagService.list(tagQueryWrapper);
             Map<Integer,List<String>> tagsMap = new HashMap<>();
             for(ProblemTag tag:tagList){
                 List<String> list = tagsMap.getOrDefault(tag.getSId(), new ArrayList<>());
@@ -159,14 +159,14 @@ public class ProblemServiceImpl extends ServiceImpl<ProblemMapper, Problem> impl
             }
 
         } else{
-            List<Integer> sIdList = tagService.findProblemIdsByTags(tags);
+            List<Integer> sIdList = problemTagService.findProblemIdsByTags(tags);
             if(sIdList.isEmpty()){
                 return new BasePageReturn<>(1,pageSize,0);
             }
             //获取所有tag
             QueryWrapper<ProblemTag> tagQueryWrapper = new QueryWrapper<>();
             tagQueryWrapper.in("sId",sIdList);
-            List<ProblemTag> tagList = tagService.list(tagQueryWrapper);
+            List<ProblemTag> tagList = problemTagService.list(tagQueryWrapper);
             Map<Integer,List<String>> tagsMap = new HashMap<>();
             for(ProblemTag tag:tagList){
                 List<String> list = tagsMap.getOrDefault(tag.getSId(), Collections.emptyList());

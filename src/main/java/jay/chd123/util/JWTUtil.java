@@ -23,14 +23,15 @@ public class JWTUtil {
     /**
      * 生成 Token（基于用户 ID）
      */
-    public String generateToken(Long userId) {
+    public String generateToken(Long userId,String name) {
         // 过期时间 = 当前时间 + 过期秒数
         Date expireTime = new Date(System.currentTimeMillis() + expireSeconds * 1000);
 
         // 使用 Hutool 的 JWT 工具构建 Token
         return JWT.create()
                 .setPayload("userId", userId) // 存储用户唯一标识（避免敏感信息）
-                        .setIssuedAt(new Date()) // 签发时间
+                .setPayload("name", name)
+                .setIssuedAt(new Date()) // 签发时间
                 .setExpiresAt(expireTime) // 过期时间
                 .setSigner(JWTSignerUtil.hs256(secret.getBytes())) // 签名算法（HS256）
                 .sign(); // 生成 Token 字符串

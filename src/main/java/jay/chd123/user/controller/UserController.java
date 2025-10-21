@@ -38,7 +38,7 @@ public class UserController {
         user.setCode(ObjectId.next());
         userService.save(user);
         // 4. 生成 JWT Token（使用用户 ID 作为标识）
-        String token = jwtUtil.generateToken(user.getId());
+        String token = jwtUtil.generateToken(user.getId(),user.getName());
 
         // 5. 构建返回数据（脱敏，不含敏感信息）
         UserVO resultVO = new UserVO();
@@ -60,7 +60,7 @@ public class UserController {
         if(user != null){
             if(password.equals(user.getPassword())){
                 // 生成 JWT Token（使用用户 ID 作为标识）
-                String token = jwtUtil.generateToken(user.getId());
+                String token = jwtUtil.generateToken(user.getId(),user.getName());
 
                 // 构建返回数据（脱敏，不含敏感信息）
                 UserVO resultVO = new UserVO();
