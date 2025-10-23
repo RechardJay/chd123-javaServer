@@ -24,11 +24,12 @@ public class UserController {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
     }
+
     @PostMapping("/signup")
-    public Result<UserVO> singUp(@RequestBody UserSignUpDTO userDto){
+    public Result<UserVO> singUp(@RequestBody UserSignUpDTO userDto) {
         String email = userDto.getEmail();
         long exist = userService.count(new QueryWrapper<User>().eq("email", email));
-        if(exist > 0){
+        if (exist > 0) {
             return Result.error("邮箱已经注册");
         }
         //
@@ -39,7 +40,7 @@ public class UserController {
         user.setCode(ObjectId.next());
         userService.save(user);
         // 4. 生成 JWT Token（使用用户 ID 作为标识）
-        String token = jwtUtil.generateToken(user.getId(),user.getName());
+        String token = jwtUtil.generateToken(user.getId(), user.getName());
 
         // 5. 构建返回数据（脱敏，不含敏感信息）
         UserVO resultVO = new UserVO();
@@ -53,15 +54,16 @@ public class UserController {
         success.setMsg("注册成功");
         return success;
     }
+
     @PostMapping("login")
-    public Result<UserVO> login(@RequestBody UserSignUpDTO userDTO){
+    public Result<UserVO> login(@RequestBody UserSignUpDTO userDTO) {
         String email = userDTO.getEmail();
         String password = userDTO.getPassword();
         User user = userService.getOne(new QueryWrapper<User>().eq("email", email));
-        if(user != null){
-            if(password.equals(user.getPassword())){
+        if (user != null) {
+            if (password.equals(user.getPassword())) {
                 // 生成 JWT Token（使用用户 ID 作为标识）
-                String token = jwtUtil.generateToken(user.getId(),user.getName());
+                String token = jwtUtil.generateToken(user.getId(), user.getName());
 
                 // 构建返回数据（脱敏，不含敏感信息）
                 UserVO resultVO = new UserVO();
@@ -79,33 +81,42 @@ public class UserController {
         }
         return Result.error("账号不存");
     }
+
     @GetMapping("/info/{id}")
-    public Result<UserVO> getUserInfo(@PathVariable("id") int userId){
+    public Result<UserVO> getUserInfo(@PathVariable("id") int userId) {
         User user = userService.getById(userId);
         UserVO vo = new UserVO(user);
         return Result.success(vo);
     }
+
     //修该用户账号
     @PostMapping("/info/code/modify")
-    public Result<Object> updateUserCode(@RequestBody Integer id,@RequestBody String code ){
-        if(code.length() > 11 || code.length() < 3){
+    public Result<Object> updateUserCode(@RequestBody Integer id, @RequestBody String code) {
+        if (code.length() > 11 || code.length() < 3) {
             return Result.error("长度错误，1-10位数字或者字母");
         }
-        if(!code.matches("^[a-zA-Z0-9]+$")){
+        if (!code.matches("^[a-zA-Z0-9]+$")) {
             return Result.error("格式错误,只能包含数字和字母");
         }
         long count = userService.count(new QueryWrapper<User>().eq("code", code));
-        if(count > 0){
+        if (count > 0) {
             return Result.error("账号名已经存在");
         }
         boolean b = userService.update(null, new UpdateWrapper<User>().eq("id", id).set("code", code));
-        return Result.success(b);
+        if (b) {
+            return Result.success(b);
+        }
+        return Result.error("未知错误，失败");
     }
+
     //更新用户基本信息
     @PostMapping("/info/update")
-    public Result<Object> updateUserInfo(@RequestBody Map<String,Object> map ){
-        User user = BeanUtil.copyProperties(map,User.class);
+    public Result<Object> updateUserInfo(@RequestBody Map<String, Object> map) {
+        User user = BeanUtil.copyProperties(map, User.class);
         boolean updated = userService.update(user, new UpdateWrapper<User>().eq("id", user.getId()));
-        return Result.success(updated);
+        if (updated) {
+            return Result.success(updated);
+        }
+        return Result.error("失败");
     }
 }
