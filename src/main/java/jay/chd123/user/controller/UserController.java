@@ -1,17 +1,18 @@
 package jay.chd123.user.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.ObjectId;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import jay.chd123.global.entity.Result;
 import jay.chd123.user.entity.User;
 import jay.chd123.user.entity.UserSignUpDTO;
 import jay.chd123.user.entity.UserVO;
 import jay.chd123.user.service.UserService;
 import jay.chd123.util.JWTUtil;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -77,5 +78,34 @@ public class UserController {
             return Result.error("账号或者密码错误");
         }
         return Result.error("账号不存");
+    }
+    @GetMapping("/info/{id}")
+    public Result<UserVO> getUserInfo(@PathVariable("id") int userId){
+        User user = userService.getById(userId);
+        UserVO vo = new UserVO(user);
+        return Result.success(vo);
+    }
+    //修该用户账号
+    @PostMapping("/info/code/modify")
+    public Result<Object> updateUserCode(@RequestBody Integer id,@RequestBody String code ){
+        if(code.length() > 11 || code.length() < 3){
+            return Result.error("长度错误，1-10位数字或者字母");
+        }
+        if(!code.matches("^[a-zA-Z0-9]+$")){
+            return Result.error("格式错误,只能包含数字和字母");
+        }
+        long count = userService.count(new QueryWrapper<User>().eq("code", code));
+        if(count > 0){
+            return Result.error("账号名已经存在");
+        }
+        boolean b = userService.update(null, new UpdateWrapper<User>().eq("id", id).set("code", code));
+        return Result.success(b);
+    }
+    //更新用户基本信息
+    @PostMapping("/info/update")
+    public Result<Object> updateUserInfo(@RequestBody Map<String,Object> map ){
+        User user = BeanUtil.copyProperties(map,User.class);
+        boolean updated = userService.update(user, new UpdateWrapper<User>().eq("id", user.getId()));
+        return Result.success(updated);
     }
 }
