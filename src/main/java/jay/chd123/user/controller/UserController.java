@@ -91,7 +91,9 @@ public class UserController {
 
     //修该用户账号
     @PostMapping("/info/code/modify")
-    public Result<Object> updateUserCode(@RequestBody Integer id, @RequestBody String code) {
+    public Result<Object> updateUserCode(@RequestBody Map<String, Object> map) {
+        String code = map.get("code").toString();
+        Long id = Long.valueOf(map.get("id").toString());
         if (code.length() > 11 || code.length() < 3) {
             return Result.error("长度错误，1-10位数字或者字母");
         }
@@ -118,5 +120,14 @@ public class UserController {
             return Result.success(updated);
         }
         return Result.error("失败");
+    }
+
+    //刷新用户token
+    @PostMapping("/token/update")
+    public Result<Object> updateUserToken(@RequestBody  Map<String, Object> map) {
+        Long id = Long.valueOf(map.get("id").toString());
+        String name = map.get("name").toString();
+        String token = jwtUtil.generateToken(id, name);
+        return Result.success(token);
     }
 }
