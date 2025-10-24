@@ -24,7 +24,13 @@ public class Result<T> implements Serializable {
         result.code = 0;
         return result;
     }
-
+    public static Result<Object> fail(String msg) {
+        Result<Object> result = new Result<>();
+        result.msg = msg;
+        result.data = "客户端格式/数据/语法错误";
+        result.code = 400;
+        return result;
+    }
     public static <T> Result<T> error(String msg) {
         Result<T> result = new Result<>();
         result.msg = msg;

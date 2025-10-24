@@ -4,6 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import jay.chd123.common.entity.MyFile;
+import jay.chd123.common.service.MyFileServiceImpl;
 import jay.chd123.global.entity.Result;
 import jay.chd123.user.entity.User;
 import jay.chd123.user.entity.UserSignUpDTO;
@@ -11,7 +13,11 @@ import jay.chd123.user.entity.UserVO;
 import jay.chd123.user.service.UserService;
 import jay.chd123.util.JWTUtil;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -19,10 +25,12 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final JWTUtil jwtUtil;
+    private final MyFileServiceImpl myFileServiceImpl;
 
-    public UserController(UserService userService, JWTUtil jwtUtil) {
+    public UserController(UserService userService, JWTUtil jwtUtil, MyFileServiceImpl myFileServiceImpl) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
+        this.myFileServiceImpl = myFileServiceImpl;
     }
 
     @PostMapping("/signup")
@@ -129,5 +137,69 @@ public class UserController {
         String name = map.get("name").toString();
         String token = jwtUtil.generateToken(id, name);
         return Result.success(token);
+    }
+    //上传用户头像
+    @PostMapping("/avatar/upload")
+    public Result<Object> uploadAvatar(@RequestParam("file") MultipartFile file,@RequestParam("userId") Long userId) {
+        // 1. 校验用户ID（必须存在，防止未登录上传）
+        if (userId == null) {
+            return Result.fail("用户未登录");
+        }
+
+        // 2. 校验文件（类型、大小）
+        if (file.isEmpty()) {
+            return Result.fail("请选择文件");
+        }
+        String contentType = file.getContentType();
+        if (!(contentType.equals("image/jpeg") || contentType.equals("image/png"))) {
+            return Result.fail("仅支持JPG、PNG格式");
+        }
+        if (file.getSize() > 2 * 1024 * 1024) {  // 2MB
+            return Result.fail("文件大小不能超过2MB");
+        }
+
+        try {
+            // 3. 生成文件实体类
+            String filename = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+            String fileKey = String.format("user_avatar_%s", userId);
+            String fileType = file.getContentType();
+            Integer fileSize =Integer.parseInt(String.valueOf(file.getSize()));
+            MyFile avatarFile = MyFile.builder()
+                    .fileKey(fileKey)
+                    .fileName(filename)
+                    .fileType(fileType)
+                    .content(file.getBytes())
+                    .fileSize(fileSize)
+                    .build();
+            // 4. 保存文件到数据库
+            MyFile existFile = myFileServiceImpl.getOne(new QueryWrapper<MyFile>().eq("fileKey", fileKey));
+            if (existFile == null) {
+                avatarFile.setId(existFile.getId());
+            }
+            myFileServiceImpl.saveOrUpdate(avatarFile);
+            return Result.success("上传成功");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("上传失败"+e.getMessage());
+        }
+    }
+    //获取用户头像
+    @GetMapping("/avatar/{id}")
+    public void getAvatarByUserId(@PathVariable String id, HttpServletResponse response) {
+        // 1. 从数据库查询该用户的头像
+        String fileKey = String.format("user_avatar_%s", id);
+        QueryWrapper<MyFile> queryWrapper = new QueryWrapper<MyFile>().eq("fileKey", fileKey);
+        MyFile file = myFileServiceImpl.getOne(queryWrapper);
+        response.setContentType(file.getFileType());
+        response.setContentLength(file.getFileSize());
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            outputStream.write(file.getContent());
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 }
