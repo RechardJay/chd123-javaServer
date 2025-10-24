@@ -160,7 +160,7 @@ public class UserController {
 
         try {
             // 3. 生成文件实体类
-            String filename = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+            String filename = file.getOriginalFilename().substring(0,file.getOriginalFilename().lastIndexOf("."));
             String fileKey = String.format("user_avatar_%s", userId);
             String fileType = file.getContentType();
             Integer fileSize =Integer.parseInt(String.valueOf(file.getSize()));
