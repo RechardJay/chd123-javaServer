@@ -173,7 +173,7 @@ public class UserController {
                     .build();
             // 4. 保存文件到数据库
             MyFile existFile = myFileServiceImpl.getOne(new QueryWrapper<MyFile>().eq("fileKey", fileKey));
-            if (existFile == null) {
+            if (existFile != null) {
                 avatarFile.setId(existFile.getId());
             }
             myFileServiceImpl.saveOrUpdate(avatarFile);
