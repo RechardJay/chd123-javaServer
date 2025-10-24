@@ -14,7 +14,7 @@ public class Sheet {
     private Long id;
     private String title;
     private String description;
-    private String tag;
+    private String tags;
     private Long creatorId;
     private Long sourceId;
     private LocalDateTime createTime;

@@ -29,9 +29,10 @@ public class SheetController {
         List<Sheet> sheetList = sheetService.list(new QueryWrapper<Sheet>().eq("creatorId", id));
         return Result.success(sheetList);
     }
+
     //创建题单
     @PostMapping("/create")
-    public Result<Object> createSheet(@RequestBody Map<Sheet,Object> map) {
+    public Result<Object> createSheet(@RequestBody Map<String, Object> map) {
         Long userId = Long.valueOf(map.get("userId").toString());
         String title = map.get("title").toString();
         long count = sheetService.count(new QueryWrapper<Sheet>().eq("id", userId).eq("title", title));
@@ -48,7 +49,7 @@ public class SheetController {
                 .title(title)
                 .creatorId(userId)
                 .description(description)
-                .tag(StrUtil.join(",",tags))
+                .tags(StrUtil.join(",", tags))
                 .build();
         boolean saved = sheetService.save(sheet);
         if (saved) {
@@ -56,14 +57,16 @@ public class SheetController {
         }
         return Result.fail("创建失败");
     }
+
     //删除题单
     @PostMapping("/delete")
-    public Result<Object> deleteSheet(@RequestBody Map<Sheet,Object> map) {
+    public Result<Object> deleteSheet(@RequestBody Map<String, Object> map) {
         Long userId = Long.valueOf(map.get("userId").toString());
         Long sheetId = Long.valueOf(map.get("sheetId").toString());
         boolean remove = sheetService.remove(new QueryWrapper<Sheet>().eq("creatorId", userId).eq("id", sheetId));
         return Result.success(remove);
     }
+
     //更新题单
     @PostMapping("/update")
     public Result<Object> updateSheet(@RequestBody Sheet sheet) {
@@ -71,6 +74,7 @@ public class SheetController {
         boolean updated = sheetService.updateById(sheet);
         return Result.success(updated);
     }
+
     @PostMapping("/problems/{id}")
     public Result<List<Problem>> getProblemsOfSheet(@PathVariable Long id) {
         List<Problem> problems = sheetService.getProblemsOfSheet(id);
