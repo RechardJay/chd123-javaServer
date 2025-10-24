@@ -46,7 +46,7 @@ public class TeamController {
     }
     @PostMapping("/join")
     public Result<Object> joinTeam(@RequestBody Map<String,Object> map) {
-        String code = map.get("code").toString();
+        String code = map.get("inviteCode").toString();
         Team team = teamService.getOne(new QueryWrapper<Team>().eq("code", code));
         if (team == null) {
             return Result.fail("团队不存在");

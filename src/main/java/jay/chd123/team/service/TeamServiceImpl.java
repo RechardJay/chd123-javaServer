@@ -37,7 +37,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> {
             return new ArrayList<>();
         }
         //从团队列表中移除自己创建的
-        List<Team> list = list(new QueryWrapper<Team>().in("teamId", teamIds).ne("creatorId", userId));
+        List<Team> list = list(new QueryWrapper<Team>().in("id", teamIds).ne("creatorId", userId));
         return list;
     }
 }
