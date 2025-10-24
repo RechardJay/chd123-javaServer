@@ -3,6 +3,7 @@ package jay.chd123.sheet.controller;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import jay.chd123.global.entity.Result;
+import jay.chd123.problem.entity.db.Problem;
 import jay.chd123.sheet.entity.db.Sheet;
 import jay.chd123.sheet.service.SheetServiceImpl;
 import org.springframework.web.bind.annotation.*;
@@ -69,5 +70,10 @@ public class SheetController {
         sheetService.count(new QueryWrapper<Sheet>().eq("id", sheet.getId()).eq("creatorId", sheet.getCreatorId()));
         boolean updated = sheetService.updateById(sheet);
         return Result.success(updated);
+    }
+    @PostMapping("/problems/{id}")
+    public Result<List<Problem>> getProblemsOfSheet(@PathVariable Long id) {
+        List<Problem> problems = sheetService.getProblemsOfSheet(id);
+        return Result.success(problems);
     }
 }
