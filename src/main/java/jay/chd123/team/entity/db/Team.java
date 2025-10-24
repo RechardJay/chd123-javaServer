@@ -15,5 +15,5 @@ public class Team {
     private Long creatorId;
     private String intro;
     private Integer count;
-    private LocalDateTime createdTime;
+    private LocalDateTime createTime;
 }
