@@ -57,7 +57,7 @@ public class TeamController {
         return Result.success(teamId);
     }
     @PostMapping("/user/list")
-    public Result<Object> userList(@RequestBody Map<String,Object> map) {
+    public Result<Object> getUserTeamList(@RequestBody Map<String,Object> map) {
         Long userId = Long.valueOf(map.get("userId").toString());
         Map<String, List<Team>> result = new HashMap<>();
         List<Team> teamCreated = teamService.list(new QueryWrapper<Team>().eq("creatorId", userId));

@@ -8,6 +8,7 @@ import jay.chd123.team.mapper.TeamMapper;
 import jay.chd123.team.mapper.TeamMemberMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> {
     public TeamServiceImpl(TeamMemberMapper memberMapper) {
         this.memberMapper = memberMapper;
     }
-    {}
 
     public boolean joinTeam(Long teamId, Long userId) {
         TeamMember teamMember = new TeamMember();
@@ -28,14 +28,16 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> {
         return i == 1;
     }
 
-    public List<Team> getJoinedTeams(Long userId){
+    public List<Team> getJoinedTeams(Long userId) {
+        //当前用户所有所有团队，包括创建和加入
         List<TeamMember> teamMemberRelation = memberMapper.selectList(new QueryWrapper<TeamMember>().eq("userId", userId));
         List<Long> teamIds = teamMemberRelation.stream().map(TeamMember::getTeamId).collect(Collectors.toList());
-        QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
-        if(teamIds.size() > 0){
-            queryWrapper.in("teamId", teamIds);
+        //没有团队，返回空列表
+        if (teamIds.isEmpty()) {
+            return new ArrayList<>();
         }
-        List<Team> list = list(queryWrapper.ne("creatorId", userId));
+        //从团队列表中移除自己创建的
+        List<Team> list = list(new QueryWrapper<Team>().in("teamId", teamIds).ne("creatorId", userId));
         return list;
     }
 }
