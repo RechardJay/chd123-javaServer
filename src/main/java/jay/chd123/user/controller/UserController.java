@@ -1,7 +1,7 @@
 package jay.chd123.user.controller;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.lang.ObjectId;
+import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import jay.chd123.global.entity.Result;
@@ -37,7 +37,7 @@ public class UserController {
         user.setEmail(email);
         user.setName(userDto.getName());
         user.setPassword(userDto.getPassword());
-        user.setCode(ObjectId.next());
+        user.setCode(RandomUtil.randomString(10)); //随机十位code
         userService.save(user);
         // 4. 生成 JWT Token（使用用户 ID 作为标识）
         String token = jwtUtil.generateToken(user.getId(), user.getName());
