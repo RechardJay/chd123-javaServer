@@ -60,4 +60,17 @@ public class NoteController {
         }
         return Result.success(noteDetail);
     }
+    @PostMapping("/edit")
+    public Result<Object> updateNote(@RequestBody Note note) {
+        Long noteId = note.getId();
+        Long userId = note.getCreatorId();
+        Note existNote = noteService.getOne(new QueryWrapper<Note>().eq("id", noteId).eq("creatorId", userId));
+        if(existNote == null) {
+            return Result.fail("笔记不存在");
+        }
+        existNote.setTitle(note.getTitle());
+        existNote.setContent(note.getContent());
+        noteService.updateById(existNote);
+        return Result.success(noteId);
+    }
 }
