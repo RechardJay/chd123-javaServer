@@ -4,7 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import jay.chd123.global.customException.BusinessException;
 import jay.chd123.global.entity.Result;
-import jay.chd123.learn.entity.Note;
+import jay.chd123.learn.entity.db.Note;
 import jay.chd123.learn.entity.vo.NoteDetail;
 import jay.chd123.learn.service.NoteServiceImpl;
 import jay.chd123.problem.entity.db.Problem;

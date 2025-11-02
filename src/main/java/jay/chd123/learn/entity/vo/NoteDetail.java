@@ -1,6 +1,6 @@
 package jay.chd123.learn.entity.vo;
 
-import jay.chd123.learn.entity.Note;
+import jay.chd123.learn.entity.db.Note;
 import lombok.Data;
 
 import java.util.List;

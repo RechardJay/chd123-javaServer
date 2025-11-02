@@ -1,9 +1,9 @@
 package jay.chd123.learn.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import jay.chd123.learn.entity.db.Note;
+import jay.chd123.learn.entity.db.AlbumNoteRelation;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface NoteMapper extends BaseMapper<Note> {
+public interface AlbumNotesMapper extends BaseMapper<AlbumNoteRelation> {
 }
