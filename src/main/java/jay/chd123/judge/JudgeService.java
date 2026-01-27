@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +19,7 @@ import java.util.concurrent.TimeoutException;
 @Service
 public class JudgeService {
 
-    private static final String CONTAINER_NAME = "cpp-judger";
+    private static final String CONTAINER_NAME = "judge-universal";
     private static final long TIME_LIMIT_MS = 5000; // 5秒超时
 
     /**
@@ -89,7 +91,7 @@ public class JudgeService {
     private CompileResult compileCode() throws Exception {
         String[] cmd = {
                 "docker", "exec", CONTAINER_NAME,
-                "bash", "-c", "g++ -o /tmp/solution /tmp/solution.cpp"
+                "sh", "-c", "g++ -o /tmp/solution /tmp/solution.cpp"
         };
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
@@ -116,16 +118,19 @@ public class JudgeService {
         long startTime = System.currentTimeMillis();
 
         try {
-            // 转义输入
-            String escapedInput = escapeInput(testCase.getInput());
-
-            String command = String.format(
-                    "docker exec %s bash -c \"echo '%s' | /tmp/solution\"",
-                    CONTAINER_NAME, escapedInput
-            );
+            // 构建执行命令：docker exec -i 容器 sh -c "执行程序"
+            String[] cmd = {
+                    "docker", "exec", "-i", CONTAINER_NAME,
+                    "sh", "-c", "/tmp/solution"
+            };
 
             // 执行命令（带超时）
-            Process process = Runtime.getRuntime().exec(command);
+            Process process = Runtime.getRuntime().exec(cmd);
+            // 将输入数据写入进程的标准输入
+            try (OutputStream os = process.getOutputStream()) {
+                os.write(testCase.getInput().getBytes(StandardCharsets.UTF_8));
+                os.flush();  // 重要：刷新缓冲区
+            }
             boolean finished = process.waitFor(TIME_LIMIT_MS, TimeUnit.MILLISECONDS);
 
             if (!finished) {
@@ -161,18 +166,17 @@ public class JudgeService {
      * 在容器内创建代码文件
      */
     private void createCodeInContainer(String code) throws Exception {
-        // 或者使用printf（更简洁）
-        String escapedCode = code
-                .replace("\\", "\\\\")   // 先转义反斜杠
-                .replace("\n", "\\n")
-                .replace("'", "'\\''");  // 再转义单引号
 
-        String command = String.format(
-                "docker exec %s bash -c \"printf '%s' > /tmp/solution.cpp\"",
-                CONTAINER_NAME, escapedCode
-        );
-
-        executeCommand(command);
+        String[] cmd = {
+                "docker", "exec", "-i", CONTAINER_NAME,
+                "sh", "-c", "cat > /tmp/solution.cpp"
+        };
+        Process process = new ProcessBuilder(cmd).start();
+        try (OutputStream os = process.getOutputStream()) {
+            os.write(code.getBytes());
+            os.flush();  // 重要：刷新缓冲区
+        }
+//        checkProcessResult(process);
     }
 
     /**
@@ -188,21 +192,6 @@ public class JudgeService {
             output.append(line);
         }
         return output.toString();
-    }
-
-    /**
-     * 辅助方法：执行命令
-     */
-    private void executeCommand(String command) throws Exception {
-        Runtime.getRuntime().exec(command);
-    }
-
-    /**
-     * 辅助方法：转义输入
-     */
-    private String escapeInput(String input) {
-        return input.replace("'", "'\\''")
-                .replace("\"", "\\\"");
     }
 
     /**
