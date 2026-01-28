@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Component
 public class CppJudger implements Judger {
@@ -43,7 +44,7 @@ public class CppJudger implements Judger {
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
-        Process process = null;
+        Process process;
         try {
             process = pb.start();
             String output = readProcessOutput(process);
@@ -72,32 +73,8 @@ public class CppJudger implements Judger {
         long startTime = System.currentTimeMillis();
 
         try {
-            // 构建执行命令：docker exec -i 容器 sh -c "执行程序"
-            String[] cmd = {
-                    "docker", "exec", "-i", CONTAINER_NAME,
-                    "sh", "-c", "/tmp/solution"
-            };
-
-            // 执行命令（带超时）
-            Process process = Runtime.getRuntime().exec(cmd);
-            // 将输入数据写入进程的标准输入
-            try (OutputStream os = process.getOutputStream()) {
-                os.write(testCase.getInput().getBytes(StandardCharsets.UTF_8));
-                os.flush();  // 重要：刷新缓冲区
-            }
-            boolean finished = process.waitFor(TIME_LIMIT_MS, TimeUnit.MILLISECONDS);
-
-            if (!finished) {
-                process.destroy();
-                caseResult.setCaseMessage("执行超时");
-                caseResult.setPassed(false);
-                return caseResult;
-            }
-
-            // 读取输出
-            String actualOutput = readProcessOutput(process).trim();
+            String actualOutput = runCodeTheInput(testCase.getInput());
             long endTime = System.currentTimeMillis();
-
             caseResult.setActualOutput(actualOutput);
             caseResult.setExecutionTime(endTime - startTime);
             caseResult.setPassed(actualOutput.equals(testCase.getOutput()));
@@ -114,6 +91,37 @@ public class CppJudger implements Judger {
         }
 
         return caseResult;
+    }
+
+    @Override
+    public String runCodeTheInput(String input) throws TimeoutException {
+        // 构建执行命令：docker exec -i 容器 sh -c "执行程序"
+        String[] cmd = {
+                "docker", "exec", "-i", CONTAINER_NAME,
+                "sh", "-c", "/tmp/solution"
+        };
+        try {
+            // 执行命令（带超时）
+            Process process = Runtime.getRuntime().exec(cmd);
+            // 将输入数据写入进程的标准输入
+            try (OutputStream os = process.getOutputStream()) {
+                os.write(input.getBytes(StandardCharsets.UTF_8));
+                os.flush();  // 重要：刷新缓冲区
+            }
+            boolean finished = process.waitFor(TIME_LIMIT_MS, TimeUnit.MILLISECONDS);
+
+            if (!finished) {
+                process.destroy();
+                throw new TimeoutException("执行超时");
+            }
+
+            // 读取输出
+            String actualOutput = readProcessOutput(process).trim();
+            return actualOutput;
+        }catch (IOException | InterruptedException e){
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

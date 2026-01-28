@@ -1,6 +1,7 @@
 package jay.chd123.judge;
 
 import jay.chd123.global.entity.Result;
+import jay.chd123.judge.entity.CodeRunRequest;
 import jay.chd123.judge.entity.JudgeRequest;
 import jay.chd123.judge.entity.JudgeResult;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,5 +21,10 @@ public class Controller {
     public Result<JudgeResult> judge(@RequestBody JudgeRequest request) {
         JudgeResult judgeResult = judgeService.judgeCode(request);
         return Result.success(judgeResult);
+    }
+    @PostMapping("/run")
+    public Result<String> runCode(@RequestBody CodeRunRequest request){
+        String result = judgeService.runCode(request);
+        return Result.success(result);
     }
 }

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Component
 public class JavaJudger implements Judger {
@@ -63,28 +64,7 @@ public class JavaJudger implements Judger {
         long startTime = System.currentTimeMillis();
 
         try {
-            // Command to run the compiled Java code
-            String[] cmd = {
-                    "docker", "exec", "-i", CONTAINER_NAME,
-                    "sh", "-c", "java -cp /tmp Main"
-            };
-
-            Process process = Runtime.getRuntime().exec(cmd);
-            try (OutputStream os = process.getOutputStream()) {
-                os.write(testCase.getInput().getBytes(StandardCharsets.UTF_8));
-                os.flush();
-            }
-
-            boolean finished = process.waitFor(TIME_LIMIT_MS, TimeUnit.MILLISECONDS);
-
-            if (!finished) {
-                process.destroy();
-                caseResult.setCaseMessage("执行超时");
-                caseResult.setPassed(false);
-                return caseResult;
-            }
-
-            String actualOutput = readProcessOutput(process).trim();
+            String actualOutput = runCodeTheInput(testCase.getInput());
             long endTime = System.currentTimeMillis();
 
             caseResult.setActualOutput(actualOutput);
@@ -103,5 +83,31 @@ public class JavaJudger implements Judger {
         }
 
         return caseResult;
+    }
+
+    @Override
+    public String runCodeTheInput(String input) throws TimeoutException {
+        String[] cmd = {
+                "docker", "exec", "-i", CONTAINER_NAME,
+                "sh", "-c", "java -cp /tmp Solution"
+        };
+        try {
+            Process process = Runtime.getRuntime().exec(cmd);
+            try (OutputStream os = process.getOutputStream()) {
+                os.write(input.getBytes(StandardCharsets.UTF_8));
+                os.flush();
+            }
+
+            boolean finished = process.waitFor(TIME_LIMIT_MS, TimeUnit.MILLISECONDS);
+
+            if (!finished) {
+                process.destroy();
+                throw new TimeoutException("执行超时");
+            }
+
+            return readProcessOutput(process).trim();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

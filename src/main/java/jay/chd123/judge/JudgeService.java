@@ -1,5 +1,6 @@
 package jay.chd123.judge;
 
+import jay.chd123.judge.entity.CodeRunRequest;
 import jay.chd123.judge.entity.JudgeRequest;
 import jay.chd123.judge.entity.JudgeResult;
 import jay.chd123.judge.lang.CppJudger;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 @Service
 public class JudgeService {
@@ -75,6 +77,26 @@ public class JudgeService {
     }
 
     /**
+     * 运行代码，接收用户指定输入，返回结果
+     */
+    public String runCode(CodeRunRequest request) {
+        String language = request.getLanguage();
+        Judger judger = getJudger(language);
+        judger.createCodeInContainer(request.getCode());
+        Judger.CompileResult compileResult = judger.compileCode();
+        if (!compileResult.isSuccess()) {
+            return compileResult.getErrorOutput();
+        }
+        String output;
+        try {
+            output = judger.runCodeTheInput(request.getInput());
+        } catch (TimeoutException e) {
+            return "执行超时";
+        }
+        return output;
+
+    }
+    /**
      * @param language 语言
      * @return 对应的判题流程
      */
@@ -88,5 +110,4 @@ public class JudgeService {
                 throw new IllegalArgumentException("暂不支持的语言: " + language);
         }
     }
-
 }
