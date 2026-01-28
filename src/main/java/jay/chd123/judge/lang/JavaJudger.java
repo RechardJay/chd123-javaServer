@@ -36,7 +36,7 @@ public class JavaJudger implements Judger {
     public CompileResult compileCode() {
         String[] cmd = {
                 "docker", "exec", CONTAINER_NAME,
-                "sh", "-c", "javac /tmp/Main.java"
+                "sh", "-c", "javac /tmp/Solution.java"
         };
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
