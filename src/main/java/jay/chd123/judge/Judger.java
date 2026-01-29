@@ -24,15 +24,21 @@ public interface Judger {
      * 辅助方法：读取进程输出
      */
     default String readProcessOutput(Process process) throws IOException {
-        BufferedReader reader = new BufferedReader(
+        try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(process.getInputStream())
-        );
-        StringBuilder output = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            output.append(line);
+        )) {
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line);
+                output.append(System.lineSeparator());
+            }
+            //去除最后多余的换行（如果预期结果末尾没有换行）
+            if (output.length() > 0) {
+                output.setLength(output.length() - System.lineSeparator().length());
+            }
+            return output.toString();
         }
-        return output.toString();
     }
 
     /**
